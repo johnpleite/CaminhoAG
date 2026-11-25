@@ -258,7 +258,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--map", type=Path, default=Path(__file__).parent / "mapa.txt")
     parser.add_argument("--start", type=parse_coordinate, default=(1, 1))
-    parser.add_argument("--goal", type=parse_coordinate, default=(13, 23))
+    parser.add_argument("--goal", type=parse_coordinate)
     parser.add_argument("--population", type=int, default=120)
     parser.add_argument("--generations", type=int, default=400)
     parser.add_argument("--seed", type=int, default=None)
@@ -266,10 +266,15 @@ def main() -> None:
 
     try:
         grid = load_grid(args.map)
+        goal = (
+            args.goal
+            if args.goal is not None
+            else (len(grid) - 2, len(grid[0]) - 2)
+        )
         result = run_genetic_algorithm(
             grid,
             args.start,
-            args.goal,
+            goal,
             population_size=args.population,
             max_generations=args.generations,
             seed=args.seed,
@@ -278,7 +283,7 @@ def main() -> None:
         parser.error(str(error))
 
     evaluation = result.evaluation
-    print(render_grid(grid, evaluation.path, args.start, args.goal))
+    print(render_grid(grid, evaluation.path, args.start, goal))
     print(f"\nCaminho encontrado: {'sim' if evaluation.reached_goal else 'nao'}")
     print(f"Quantidade de passos: {evaluation.steps}")
     print(f"Quantidade de curvas: {evaluation.turns}")
