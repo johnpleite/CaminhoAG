@@ -1,5 +1,3 @@
-"""Gera um mapa aleatório mantendo uma rota entre os pontos padrão."""
-
 import argparse
 import os
 import random
