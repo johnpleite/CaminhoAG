@@ -1,4 +1,4 @@
-"""Generate a random map while keeping a route between the default endpoints."""
+"""Gera um mapa aleatório mantendo uma rota entre os pontos padrão."""
 
 import argparse
 import os
@@ -11,84 +11,84 @@ PROJECT_DIR = Path(__file__).resolve().parent
 
 
 def generate_grid(
-    rows: int = 15,
-    columns: int = 25,
-    wall_probability: float = 0.25,
+    linhas: int = 15,
+    colunas: int = 25,
+    probabilidade_paredes: float = 0.25,
     seed: int | None = None,
 ) -> Grid:
-    if rows < 3 or columns < 3:
+    if linhas < 3 or colunas < 3:
         raise ValueError("Map dimensions must be at least 3 by 3.")
-    if not 0 <= wall_probability <= 1:
+    if not 0 <= probabilidade_paredes <= 1:
         raise ValueError("Wall probability must be between 0 and 1.")
 
     rng = random.Random(seed)
     grid = [
-        [int(rng.random() < wall_probability) for _ in range(columns)]
-        for _ in range(rows)
+        [int(rng.random() < probabilidade_paredes) for _ in range(colunas)]
+        for _ in range(linhas)
     ]
 
-    for row in range(rows):
-        grid[row][0] = grid[row][-1] = 1
-    for column in range(columns):
-        grid[0][column] = grid[-1][column] = 1
+    for linha in range(linhas):
+        grid[linha][0] = grid[linha][-1] = 1
+    for coluna in range(colunas):
+        grid[0][coluna] = grid[-1][coluna] = 1
 
-    goal_row, goal_column = rows - 2, columns - 2
-    for column in range(1, goal_column + 1):
-        grid[1][column] = 0
-    for row in range(1, goal_row + 1):
-        grid[row][goal_column] = 0
+    linha_destino, coluna_destino = linhas - 2, colunas - 2
+    for coluna in range(1, coluna_destino + 1):
+        grid[1][coluna] = 0
+    for linha in range(1, linha_destino + 1):
+        grid[linha][coluna_destino] = 0
     return grid
 
 
-def save_grid(grid: Grid, map_path: Path) -> Path:
-    map_path.parent.mkdir(parents=True, exist_ok=True)
-    archive_path = map_path.with_name("mapa_antigo.txt")
-    if map_path.resolve() == archive_path.resolve():
+def save_grid(mapa: Grid, caminho_mapa: Path) -> Path:
+    caminho_mapa.parent.mkdir(parents=True, exist_ok=True)
+    caminho_arquivo = caminho_mapa.with_name("mapa_antigo.txt")
+    if caminho_mapa.resolve() == caminho_arquivo.resolve():
         raise ValueError("The output map cannot be named mapa_antigo.txt.")
 
-    content = "\n".join("".join(map(str, row)) for row in grid) + "\n"
-    temporary_path: Path | None = None
+    conteudo = "\n".join("".join(map(str, linha)) for linha in mapa) + "\n"
+    caminho_temporario: Path | None = None
     try:
         with tempfile.NamedTemporaryFile(
             mode="w",
             encoding="utf-8",
-            dir=map_path.parent,
+            dir=caminho_mapa.parent,
             delete=False,
-        ) as temporary_file:
-            temporary_file.write(content)
-            temporary_path = Path(temporary_file.name)
+        ) as arquivo_temporario:
+            arquivo_temporario.write(conteudo)
+            caminho_temporario = Path(arquivo_temporario.name)
 
-        if map_path.exists():
-            os.replace(map_path, archive_path)
-        os.replace(temporary_path, map_path)
+        if caminho_mapa.exists():
+            os.replace(caminho_mapa, caminho_arquivo)
+        os.replace(caminho_temporario, caminho_mapa)
     finally:
-        if temporary_path is not None and temporary_path.exists():
-            temporary_path.unlink()
-    return map_path
+        if caminho_temporario is not None and caminho_temporario.exists():
+            caminho_temporario.unlink()
+    return caminho_mapa
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--rows", type=int, default=15)
-    parser.add_argument("--columns", type=int, default=25)
-    parser.add_argument("--wall-probability", type=float, default=0.25)
+    parser.add_argument("--linhas", type=int, default=15)
+    parser.add_argument("--colunas", type=int, default=25)
+    parser.add_argument("--probabilidade-paredes", type=float, default=0.25)
     parser.add_argument("--seed", type=int)
     args = parser.parse_args()
 
     try:
-        grid = generate_grid(
-            args.rows,
-            args.columns,
-            args.wall_probability,
+        mapa = generate_grid(
+            args.linhas,
+            args.colunas,
+            args.probabilidade_paredes,
             args.seed,
         )
-        map_path = save_grid(grid, PROJECT_DIR / "mapa.txt")
+        caminho_mapa = save_grid(mapa, PROJECT_DIR / "mapa.txt")
     except (OSError, ValueError) as error:
         parser.error(str(error))
 
-    print(f"Mapa gerado: {map_path}")
+    print(f"Mapa gerado: {caminho_mapa}")
     print("Inicio: (1, 1)")
-    print(f"Destino: ({args.rows - 2}, {args.columns - 2})")
+    print(f"Destino: ({args.linhas - 2}, {args.colunas - 2})")
     print("O mapa anterior está salvo em mapa_antigo.txt.")
 
 

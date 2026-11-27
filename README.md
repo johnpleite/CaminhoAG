@@ -1,8 +1,8 @@
 
 # Algoritmo Genético de Path Finding
 
-Algoritmo genético feito em Python para encontrar o menor caminho viável  
-entre dois pontos de um mapa, que é representado como uma matriz 2D.
+Algoritmo genético feito em Python para encontrar uma rota viável em um mapa
+representado como uma matriz 2D, com suporte a vários objetivos.
 
 ## Executar
 
@@ -24,7 +24,13 @@ Quando se gera um mapa, ele é salvo em mapa.txt e já é utilizado como padrão
 Para personalizar os parâmetros do algoritmo:
 
 ```powershell
-python genetic_pathfinder.py --map mapa.txt --start 1,1 --goal 13,23 --population 120 --generations 400 --seed 7
+python genetic_pathfinder.py --mapa mapa.txt --inicio 1,1 --destinos 13,23 --populacao 120 --geracoes 400 --seed 7
+```
+
+Informe um ou mais objetivos com `--destinos`:
+
+```powershell
+python genetic_pathfinder.py --mapa mapa.txt --inicio 1,1 --destinos 3,4 8,12 10,2 --populacao 120 --geracoes 400 --seed 7
 ```
 
 ## Gerador de mapa
@@ -34,7 +40,7 @@ O gerador cria um mapa aleatório de padrão sendo 15 por 25, e garante um corre
 As dimensões e a probabilidade de paredes podem ser alteradas:
 
 ```powershell
-python generate_random_map.py --rows 20 --columns 30 --wall-probability 0.3
+python generate_map.py --linhas 20 --colunas 30 --probabilidade-paredes 0.3
 ```
 
 ## Aptidão e algoritmo
@@ -45,11 +51,13 @@ Uma curva é classificada como uma mudança de direção entre dois passos.
 E para cada posição percorrida (exceto o ponto inicial), cada parede nos anéis de distância de  
 Chebyshev 1 e 2 adiciona um ponto de penalidade, determinada como uma penalidade de segurança.
 
-A população inicial parte de uma rota válida mais curta, calculada por busca em  
-largura, e cria variações dela. Em cada geração, os melhores indivíduos são  
-preservados (elitismo) e os demais são criados com crossover de um ponto entre  
-dois pais e mutação por substituição aleatória de direções. 
-O algoritmo para quando a rota inicial é completa, ou ao atingir o limite de gerações.
+A população inicial contém permutações de todos os objetivos presentes. A busca em largura
+calcula os trechos viáveis entre cada par de pontos. A aptidão soma passos,
+curvas e penalidades de segurança na rota completa. Em cada geração, os
+melhores indivíduos são preservados (elitismo) e os demais são criados com
+crossover e mutação de permutação. Para um objetivo, existe apenas uma ordem e
+a avaliação termina após a primeira geração. Porém, com vários objetivos a evolução
+continua até o limite configurado de gerações.
 
 Após terminar, os dados do algoritmo são mostrados para o usuário, sendo uma representação
 do caminho encontrado, os passos, as penalidades de segurança (por estar perto de paredes), 
